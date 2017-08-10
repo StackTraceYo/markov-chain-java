@@ -7,11 +7,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -24,25 +21,62 @@ import java.util.stream.Collectors;
 public class MarkovTextChainGenerator {
 
     private final Integer order;
+    private InputStream generatorStream;
+    private MarkovChain<String> state;
 
+    /**
+     * Instantiates a new Markov text chain generator.
+     *
+     * @param order the order
+     */
     public MarkovTextChainGenerator(Integer order) {
         this.order = order;
     }
 
+    /**
+     * Instantiates a new Markov text chain generator.
+     */
     public MarkovTextChainGenerator() {
         order = 2;
     }
 
-    public void generateChainFromStream(InputStream stream) {
+    /**
+     * Generate chain from stream markov text chain generator.
+     *
+     * @param stream the stream
+     * @return the markov text chain generator
+     */
+    public MarkovTextChainGenerator generateChainFromStream(InputStream stream) {
 
+        this.generatorStream = stream;
         Optional<Map<String, MarkovChainProbabilityDistribution<String>>> distribution = new BufferedReader(new InputStreamReader(stream))
                 .lines()
                 .map(this::generateFrequency)
                 .reduce(this::mergeDistributions);
         if (distribution.isPresent()) {
-            MarkovChain chain = new MarkovChain<String>(distribution.get());
-            System.out.println(Joiner.on(" ").join(chain.generate(20)));
+            state = new MarkovChain<>(distribution.get());
+            return this;
         }
+        throw new RuntimeException("Error with Generation");
+    }
+
+    /**
+     * Gets tokens.
+     *
+     * @param maxTokens the max tokens
+     * @return the tokens
+     */
+    public List<String> getTokens(Integer maxTokens) {
+        return state.generateTokens(maxTokens);
+    }
+
+    /**
+     * Regenerate markov text chain generator.
+     *
+     * @return the markov text chain generator
+     */
+    public MarkovTextChainGenerator regenerate() {
+        return generateChainFromStream(generatorStream);
     }
 
     private Map<String, MarkovChainProbabilityDistribution<String>> mergeDistributions(Map<String, MarkovChainProbabilityDistribution<String>> left, Map<String, MarkovChainProbabilityDistribution<String>> right) {
@@ -89,14 +123,5 @@ public class MarkovTextChainGenerator {
             lineTokens.remove(0);
         }
         return frequencyMap;
-    }
-
-    public static void main(String[] args) throws IOException {
-        new MarkovTextChainGenerator(2)
-                .generateChainFromStream(Files.newInputStream(Paths.get("src/main/resources/data/trumptweets.txt")));
-//        Map<String, MarkovChainProbabilityDistribution<String>> y = x.generateFrequency("hello whats up lord up");
-//        Map<String, MarkovChainProbabilityDistribution<String>> z = x.generateFrequency("hello whats up");
-//        Map<String, MarkovChainProbabilityDistribution<String>> z2 = x.mergeDistributions(y, z);
-//        Map<String, MarkovChainProbabilityDistribution<String>> z21 = z2;
     }
 }
