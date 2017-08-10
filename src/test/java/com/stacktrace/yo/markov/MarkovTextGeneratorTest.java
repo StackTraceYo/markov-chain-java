@@ -1,22 +1,26 @@
-package com.stacktrace.yo;
+package com.stacktrace.yo.markov;
 
-import com.stacktrace.yo.markov.MarkovTextChainGenerator;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-public class TrumpTweetTextGenerator {
+import static org.junit.Assert.assertFalse;
 
 
-    public static void main(String[] args) throws IOException {
+public class MarkovTextGeneratorTest {
+
+    @Test
+    public void testGeneratorReturnsTokens() throws IOException {
         List<String> tokens = new MarkovTextChainGenerator(2)
                 .generateChainFromStream(
                         Files.newInputStream(
-                                Paths.get("src/main/resources/data/trumptweets.txt")
+                                Paths.get("src/test/resources/data/trumptweets.txt")
                         )
                 ).getTokens(20);
+        assertFalse(tokens.isEmpty());
         tokens.forEach(token -> System.out.print(token + " "));
     }
 }

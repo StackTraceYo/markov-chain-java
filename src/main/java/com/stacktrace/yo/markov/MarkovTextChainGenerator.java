@@ -70,6 +70,10 @@ public class MarkovTextChainGenerator {
         return state.generateTokens(maxTokens);
     }
 
+    public MarkovChain<String> getState() {
+        return state;
+    }
+
     /**
      * Regenerate markov text chain generator.
      *
