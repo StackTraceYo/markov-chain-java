@@ -58,19 +58,13 @@ public class MarkovChain<T> {
         MarkovChainProbabilityDistribution<T> currentProbability = currentRecord.record;
         T currentToken = currentRecord.tokenUsed;
 
-        boolean continueChain = true;
         tokens.add(currentToken); // add starting token
 
-        while (continueChain && tokens.size() < maxTokens) {
-            if (currentProbability != null) { //if the current token has a distribution
-                T nextToken = currentProbability.getNext(); //get a random next token
-                currentRecord = getNextRecord(nextToken); //find this record in master distribution
-                tokens.add(nextToken); // add new token
-                currentProbability = currentRecord.record; //set current probability distribution to next link in chain
-            } else {
-                //end
-                continueChain = false; //this token was never followed by anything
-            }
+        while (currentProbability != null && tokens.size() <= maxTokens) { //while the current token has a distribution
+            T nextToken = currentProbability.getNext(); //get a random next token
+            currentRecord = getNextRecord(nextToken); //find this record in master distribution
+            tokens.add(nextToken); // add new token
+            currentProbability = currentRecord.record; //set current probability distribution to next link in chain
         }
         return tokens;
     }
